@@ -107,7 +107,7 @@ const Sidebar = () => {
 
     return (
       <img
-        src={`/src/assets/svg/ic_${iconName}.svg`}
+        src={`/assets/svg/ic_${iconName}.svg`}
         alt={iconName}
         className="w-5 h-5"
       />
@@ -122,7 +122,7 @@ const Sidebar = () => {
         }`}
       >
         <img
-          src="/src/assets/svg/logo.svg"
+          src="/assets/svg/logo.svg"
           alt="Logo"
           className="w-15 h-auto"
         />
