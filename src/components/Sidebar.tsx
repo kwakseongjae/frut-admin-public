@@ -1,5 +1,14 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
+import logo from '@/assets/svg/logo.svg'
+import icProfile from '@/assets/svg/ic_profile.svg'
+import icCart from '@/assets/svg/ic_cart.svg'
+import icDiscountCoupon from '@/assets/svg/ic_discount_coupon.svg'
+import icCalculator from '@/assets/svg/ic_calculator.svg'
+import icLabelTag from '@/assets/svg/ic_label_tag.svg'
+import icSpeaker from '@/assets/svg/ic_speaker.svg'
+import icCard from '@/assets/svg/ic_card.svg'
+import icHeadphone from '@/assets/svg/ic_headphone.svg'
 
 const Sidebar = () => {
   const location = useLocation()
@@ -20,6 +29,17 @@ const Sidebar = () => {
       return () => navElement.removeEventListener('scroll', handleScroll)
     }
   }, [])
+
+  const iconMap: Record<string, string> = {
+    profile: icProfile,
+    cart: icCart,
+    discount_coupon: icDiscountCoupon,
+    calculator: icCalculator,
+    label_tag: icLabelTag,
+    speaker: icSpeaker,
+    card: icCard,
+    headphone: icHeadphone,
+  }
 
   const menuItems = [
     {
@@ -95,9 +115,13 @@ const Sidebar = () => {
   ]
 
   const renderIcon = (iconName: string) => {
+    const iconSrc = iconMap[iconName]
+    if (!iconSrc) {
+      return null
+    }
     return (
       <img
-        src={`/src/assets/svg/ic_${iconName}.svg`}
+        src={iconSrc}
         alt={iconName}
         className="w-5 h-5"
       />
@@ -112,7 +136,7 @@ const Sidebar = () => {
         }`}
       >
         <img
-          src="/src/assets/svg/logo.svg"
+          src={logo}
           alt="Logo"
           className="w-15 h-auto"
         />
