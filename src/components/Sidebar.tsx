@@ -23,12 +23,6 @@ const Sidebar = () => {
 
   const menuItems = [
     {
-      path: '/admin-profile',
-      label: '관리자 프로필',
-      icon: 'admin-profile',
-      subpages: [],
-    },
-    {
       path: '/user-management',
       label: '유저관리',
       icon: 'profile',
@@ -80,18 +74,18 @@ const Sidebar = () => {
       icon: 'speaker',
       subpages: [
         { label: '광고 관리', path: '/ad-management' },
-        { label: '광고 문의', path: '/ad-inquiry' },
+        // { label: '광고 문의', path: '/ad-inquiry' },
       ],
     },
-    {
-      path: '/customer-service',
-      label: '고객센터',
-      icon: 'headphone',
-      subpages: [
-        { label: '공지사항', path: '/customer-ad-management' },
-        { label: 'FAQ', path: '/customer-ad-inquiry' },
-      ],
-    },
+    // {
+    //   path: '/customer-service',
+    //   label: '고객센터',
+    //   icon: 'headphone',
+    //   subpages: [
+    //     { label: '공지사항', path: '/customer-ad-management' },
+    //     { label: 'FAQ', path: '/customer-ad-inquiry' },
+    //   ],
+    // },
     {
       path: '/popup-management',
       label: '팝업관리',
@@ -101,13 +95,9 @@ const Sidebar = () => {
   ]
 
   const renderIcon = (iconName: string) => {
-    if (iconName === 'admin-profile') {
-      return <div className="w-5 h-5 rounded-full bg-gray-400" />
-    }
-
     return (
       <img
-        src={`/assets/svg/ic_${iconName}.svg`}
+        src={`/src/assets/svg/ic_${iconName}.svg`}
         alt={iconName}
         className="w-5 h-5"
       />
@@ -117,12 +107,12 @@ const Sidebar = () => {
   return (
     <div className="w-64 bg-white text-gray-800 h-screen border-r border-gray-200 flex flex-col">
       <div
-        className={`flex justify-center h-15 flex-shrink-0 relative transition-shadow duration-200 ${
+        className={`flex justify-center h-15 shrink-0 relative transition-shadow duration-200 ${
           isScrolled ? 'shadow-md' : ''
         }`}
       >
         <img
-          src="/assets/svg/logo.svg"
+          src="/src/assets/svg/logo.svg"
           alt="Logo"
           className="w-15 h-auto"
         />

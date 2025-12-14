@@ -1,65 +1,55 @@
 import { useState } from 'react'
 import CategoryModal from '@/components/CategoryModal'
-
-interface Category {
-  id: number
-  name: string
-  icon: string
-  subMenuCount: number
-  status: 'active' | 'inactive'
-  subMenus: SubMenu[]
-}
-
-interface SubMenu {
-  id: number
-  name: string
-  status: 'active' | 'inactive'
-}
+import CategoryEditModal from '@/components/CategoryEditModal'
+import CategoryDeleteModal from '@/components/CategoryDeleteModal'
+import {
+  useCategories,
+  useCreateCategory,
+  useCreateSubCategory,
+  useToggleCategoryActive,
+  useUpdateCategory,
+  useDeleteCategory,
+} from '@/hooks/useCategory'
 
 const CategoryManagement = () => {
   const [expandedCategories, setExpandedCategories] = useState<number[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'main' | 'sub'>('main')
+  const [editingCategory, setEditingCategory] = useState<{
+    id: number
+    name: string
+    isActive: boolean
+  } | null>(null)
+  const [deletingCategory, setDeletingCategory] = useState<{
+    id: number
+    name: string
+    isMainCategory: boolean
+  } | null>(null)
+  const [categoryError, setCategoryError] = useState<string | null>(null)
+  const [editError, setEditError] = useState<string | null>(null)
 
-  // 더미 데이터
-  const categories: Category[] = [
-    {
-      id: 1,
-      name: '신선과일',
-      icon: '🍎',
-      subMenuCount: 3,
-      status: 'active',
-      subMenus: [
-        { id: 1, name: '사과', status: 'active' },
-        { id: 2, name: '배', status: 'active' },
-        { id: 3, name: '감귤', status: 'active' },
-      ],
-    },
-    {
-      id: 2,
-      name: '열대과일',
-      icon: '🥭',
-      subMenuCount: 2,
-      status: 'active',
-      subMenus: [
-        { id: 4, name: '망고', status: 'active' },
-        { id: 5, name: '파인애플', status: 'active' },
-      ],
-    },
-    {
-      id: 3,
-      name: '베리류',
-      icon: '🍓',
-      subMenuCount: 4,
-      status: 'active',
-      subMenus: [
-        { id: 6, name: '딸기', status: 'active' },
-        { id: 7, name: '블루베리', status: 'active' },
-        { id: 8, name: '라즈베리', status: 'active' },
-        { id: 9, name: '크랜베리', status: 'active' },
-      ],
-    },
-  ]
+  const { data, isLoading, error } = useCategories()
+  const createCategoryMutation = useCreateCategory()
+  const createSubCategoryMutation = useCreateSubCategory()
+  const toggleCategoryMutation = useToggleCategoryActive()
+  const updateCategoryMutation = useUpdateCategory()
+  const deleteCategoryMutation = useDeleteCategory()
+
+  // 에러 메시지 추출 헬퍼 함수
+  const extractCategoryError = (error: any): string | null => {
+    if (error?.response?.data?.data?.category_name) {
+      const errorArray = error.response.data.data.category_name
+      if (Array.isArray(errorArray) && errorArray.length > 0) {
+        return errorArray[0]
+      }
+    }
+    return null
+  }
+
+  // API 데이터를 컴포넌트에서 사용할 형식으로 변환
+  const categories = data?.data || []
 
   const toggleCategory = (categoryId: number) => {
     setExpandedCategories(prev =>
@@ -74,25 +64,188 @@ const CategoryManagement = () => {
 
   const handleOpenModal = (type: 'main' | 'sub') => {
     setModalType(type)
+    setCategoryError(null)
     setIsModalOpen(true)
   }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
+    setCategoryError(null)
+  }
+
+  const handleToggleCategory = (categoryId: number, e: React.MouseEvent) => {
+    e.stopPropagation() // 카테고리 펼치기/접기 방지
+    toggleCategoryMutation.mutate(categoryId, {
+      onError: (error: any) => {
+        const message =
+          error.response?.data?.message ||
+          error.message ||
+          '카테고리 상태 변경에 실패했습니다.'
+        alert(message)
+      },
+    })
+  }
+
+  const handleOpenEditModal = (
+    categoryId: number,
+    categoryName: string,
+    isActive: boolean,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation() // 카테고리 펼치기/접기 방지
+    setEditingCategory({ id: categoryId, name: categoryName, isActive })
+    setEditError(null)
+    setIsEditModalOpen(true)
+  }
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false)
+    setEditingCategory(null)
+    setEditError(null)
+  }
+
+  const handleUpdateCategory = (categoryName: string) => {
+    if (!editingCategory) return
+
+    setEditError(null)
+
+    updateCategoryMutation.mutate(
+      {
+        id: editingCategory.id,
+        data: {
+          category_name: categoryName,
+          is_active: editingCategory.isActive,
+        },
+      },
+      {
+        onSuccess: () => {
+          setIsEditModalOpen(false)
+          setEditingCategory(null)
+          setEditError(null)
+        },
+        onError: (error: any) => {
+          const categoryErrorMsg = extractCategoryError(error)
+          if (categoryErrorMsg) {
+            setEditError(categoryErrorMsg)
+          } else {
+            const message =
+              error.response?.data?.message ||
+              error.message ||
+              '카테고리 수정에 실패했습니다.'
+            alert(message)
+          }
+        },
+      }
+    )
+  }
+
+  const handleOpenDeleteModal = (
+    categoryId: number,
+    categoryName: string,
+    isMainCategory: boolean,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation() // 카테고리 펼치기/접기 방지
+    setDeletingCategory({ id: categoryId, name: categoryName, isMainCategory })
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false)
+    setDeletingCategory(null)
+  }
+
+  const handleConfirmDelete = () => {
+    if (!deletingCategory) return
+
+    deleteCategoryMutation.mutate(deletingCategory.id, {
+      onSuccess: () => {
+        setIsDeleteModalOpen(false)
+        setDeletingCategory(null)
+      },
+      onError: (error: any) => {
+        const message =
+          error.response?.data?.message ||
+          error.message ||
+          '카테고리 삭제에 실패했습니다.'
+        alert(message)
+      },
+    })
   }
 
   const handleAddCategory = (
     categoryName: string,
     parentCategoryId?: number
   ) => {
+    setCategoryError(null)
+
     if (modalType === 'main') {
-      console.log(`Adding main category: "${categoryName}"`)
+      // 대메뉴 추가
+      createCategoryMutation.mutate(
+        {
+          category_name: categoryName,
+          is_active: true,
+        },
+        {
+          onSuccess: () => {
+            setIsModalOpen(false)
+            setCategoryError(null)
+          },
+          onError: (error: any) => {
+            const categoryErrorMsg = extractCategoryError(error)
+            if (categoryErrorMsg) {
+              setCategoryError(categoryErrorMsg)
+            } else {
+              const message =
+                error.response?.data?.message ||
+                error.message ||
+                '대메뉴 추가에 실패했습니다.'
+              alert(message)
+            }
+          },
+        }
+      )
     } else {
-      console.log(
-        `Adding sub category: "${categoryName}" to parent ID: ${parentCategoryId}`
+      // 소메뉴 추가
+      if (!parentCategoryId) {
+        alert('대메뉴를 선택해주세요.')
+        return
+      }
+
+      // 선택한 대메뉴 정보 찾기
+      const parentCategory = categories.find(cat => cat.id === parentCategoryId)
+      if (!parentCategory) {
+        alert('대메뉴를 찾을 수 없습니다.')
+        return
+      }
+
+      createSubCategoryMutation.mutate(
+        {
+          category_name: categoryName,
+          parent_category_id: parentCategoryId,
+          parent_category_name: parentCategory.category_name,
+          is_active: true,
+        },
+        {
+          onSuccess: () => {
+            setIsModalOpen(false)
+            setCategoryError(null)
+          },
+          onError: (error: any) => {
+            const categoryErrorMsg = extractCategoryError(error)
+            if (categoryErrorMsg) {
+              setCategoryError(categoryErrorMsg)
+            } else {
+              const message =
+                error.response?.data?.message ||
+                error.message ||
+                '소메뉴 추가에 실패했습니다.'
+              alert(message)
+            }
+          },
+        }
       )
     }
-    // 여기서 실제 카테고리 추가 로직을 구현할 수 있습니다
   }
 
   return (
@@ -123,9 +276,31 @@ const CategoryManagement = () => {
         </div>
       </div>
 
+      {/* 로딩 상태 */}
+      {isLoading && (
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+          <p className="text-gray-600">카테고리를 불러오는 중...</p>
+        </div>
+      )}
+
+      {/* 에러 상태 */}
+      {error && (
+        <div className="bg-white rounded-lg border border-red-200 p-8 text-center">
+          <p className="text-red-600">
+            카테고리를 불러오는 중 오류가 발생했습니다.
+          </p>
+        </div>
+      )}
+
       {/* 카테고리 리스트 */}
+      {!isLoading && !error && (
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        {categories.map(category => (
+          {categories.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              카테고리가 없습니다.
+            </div>
+          ) : (
+            categories.map(category => (
           <div
             key={category.id}
             className="border-b border-gray-200 last:border-b-0"
@@ -156,31 +331,26 @@ const CategoryManagement = () => {
                     </svg>
                   </div>
 
-                  {/* 아이콘 플레이스홀더 */}
-                  <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-sm">
-                    {category.icon}
-                  </div>
-
                   {/* 카테고리 정보 */}
                   <div className="flex items-center space-x-3">
                     <div>
                       <div className="font-medium text-gray-900">
-                        {category.name}
+                        {category.category_name}
                       </div>
                       <div className="text-sm text-gray-500">
-                        소메뉴 {category.subMenuCount}개
+                        소메뉴 {category.subcategory_count}개
                       </div>
                     </div>
 
                     {/* 상태 태그 */}
                     <span
                       className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        category.status === 'active'
+                        category.is_active
                           ? 'bg-gray-800 text-white'
                           : 'bg-gray-200 text-gray-600'
                       }`}
                     >
-                      {category.status === 'active' ? '활성' : '비활성'}
+                      {category.is_active ? '활성' : '비활성'}
                     </span>
                   </div>
                 </div>
@@ -188,13 +358,37 @@ const CategoryManagement = () => {
                 <div className="flex items-center space-x-3">
                   {/* 액션 버튼들 */}
                   <div className="flex space-x-2">
-                    <button className="px-3 py-2 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors bg-white">
-                      비활성화
+                    <button
+                      onClick={e => handleToggleCategory(category.id, e)}
+                      disabled={toggleCategoryMutation.isPending}
+                      className="px-3 py-2 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {category.is_active ? '비활성화' : '활성화'}
                     </button>
-                    <button className="px-3 py-2 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors bg-white">
+                    <button
+                      onClick={e =>
+                        handleOpenEditModal(
+                          category.id,
+                          category.category_name,
+                          category.is_active,
+                          e
+                        )
+                      }
+                      className="px-3 py-2 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors bg-white"
+                    >
                       수정
                     </button>
-                    <button className="px-3 py-2 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 transition-colors">
+                    <button
+                      onClick={e =>
+                        handleOpenDeleteModal(
+                          category.id,
+                          category.category_name,
+                          true,
+                          e
+                        )
+                      }
+                      className="px-3 py-2 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 transition-colors"
+                    >
                       삭제
                     </button>
                   </div>
@@ -205,9 +399,9 @@ const CategoryManagement = () => {
             {/* 소메뉴 (펼쳐질 때만 표시) */}
             {isExpanded(category.id) && (
               <div className="bg-gray-100 border-t border-gray-200">
-                {category.subMenus.map(subMenu => (
+                {category.subcategories.map(subCategory => (
                   <div
-                    key={subMenu.id}
+                    key={subCategory.id}
                     className="px-12 py-3 border-b border-gray-200 last:border-b-0"
                   >
                     <div className="flex items-center justify-between">
@@ -218,18 +412,18 @@ const CategoryManagement = () => {
                         {/* 소메뉴 이름과 상태 태그 */}
                         <div className="flex items-center space-x-3">
                           <span className="text-sm text-gray-900">
-                            {subMenu.name}
+                            {subCategory.category_name}
                           </span>
 
                           {/* 상태 태그 */}
                           <span
                             className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              subMenu.status === 'active'
+                              subCategory.is_active
                                 ? 'bg-gray-800 text-white'
                                 : 'bg-gray-200 text-gray-600'
                             }`}
                           >
-                            {subMenu.status === 'active' ? '활성' : '비활성'}
+                            {subCategory.is_active ? '활성' : '비활성'}
                           </span>
                         </div>
                       </div>
@@ -237,13 +431,42 @@ const CategoryManagement = () => {
                       <div className="flex items-center space-x-2">
                         {/* 액션 버튼들 */}
                         <div className="flex space-x-2">
-                          <button className="px-3 py-2 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors bg-white">
-                            비활성화
+                          <button
+                            onClick={e => {
+                              e.stopPropagation()
+                              handleToggleCategory(subCategory.id, e)
+                            }}
+                            disabled={toggleCategoryMutation.isPending}
+                            className="px-3 py-2 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {subCategory.is_active ? '비활성화' : '활성화'}
                           </button>
-                          <button className="px-3 py-1 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors bg-white">
+                          <button
+                            onClick={e => {
+                              e.stopPropagation()
+                              handleOpenEditModal(
+                                subCategory.id,
+                                subCategory.category_name,
+                                subCategory.is_active,
+                                e
+                              )
+                            }}
+                            className="px-3 py-1 text-xs font-medium text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors bg-white"
+                          >
                             수정
                           </button>
-                          <button className="px-3 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 transition-colors">
+                          <button
+                            onClick={e => {
+                              e.stopPropagation()
+                              handleOpenDeleteModal(
+                                subCategory.id,
+                                subCategory.category_name,
+                                false,
+                                e
+                              )
+                            }}
+                            className="px-3 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 transition-colors"
+                          >
                             삭제
                           </button>
                         </div>
@@ -254,8 +477,10 @@ const CategoryManagement = () => {
               </div>
             )}
           </div>
-        ))}
+            ))
+          )}
       </div>
+      )}
 
       {/* Category Modal */}
       <CategoryModal
@@ -266,9 +491,37 @@ const CategoryManagement = () => {
         isSubMenu={modalType === 'sub'}
         parentCategories={categories.map(cat => ({
           id: cat.id,
-          name: cat.name,
+          name: cat.category_name,
         }))}
+        isLoading={
+          createCategoryMutation.isPending || createSubCategoryMutation.isPending
+        }
+        error={categoryError}
       />
+
+      {/* Category Edit Modal */}
+      {editingCategory && (
+        <CategoryEditModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          onUpdateCategory={handleUpdateCategory}
+          title="카테고리 수정"
+          currentName={editingCategory.name}
+          isLoading={updateCategoryMutation.isPending}
+          error={editError}
+        />
+      )}
+
+      {/* Category Delete Modal */}
+      {deletingCategory && (
+        <CategoryDeleteModal
+          isOpen={isDeleteModalOpen}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleConfirmDelete}
+          isMainCategory={deletingCategory.isMainCategory}
+          isLoading={deleteCategoryMutation.isPending}
+        />
+      )}
     </div>
   )
 }

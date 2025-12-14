@@ -390,8 +390,14 @@ export interface SpecialOfferPurchase {
   productName: string
   quantity: number
   totalPrice: number
-  paymentStatus: 'pending' | 'completed'
-  orderStatus: 'deposit_pending' | 'preparing' | 'shipping' | 'delivered'
+  paymentStatus: 'pending' | 'completed' | 'failed' | 'cancelled'
+  orderStatus:
+    | 'deposit_pending'
+    | 'preparing'
+    | 'shipping'
+    | 'delivered'
+    | 'cancelled'
+    | 'refunded'
   orderDateTime: string
 }
 
@@ -774,7 +780,7 @@ export interface Ad {
   title: string
   advertiser: string
   isActive: boolean
-  status: 'in_progress' | 'stopped'
+  status: 'in_progress' | 'pending' | 'review' | 'completed' | 'canceled'
   imageUrl?: string
   periodStart: string
   periodEnd: string
@@ -817,7 +823,7 @@ export const dummyAds: Ad[] = [
     title: '마이페이지 광고',
     advertiser: 'DEF 브랜드',
     isActive: false,
-    status: 'stopped',
+    status: 'in_progress',
     periodStart: '2025-02-01',
     periodEnd: '2025-02-28',
     connectedUrl: 'example.com/mypage',
@@ -838,7 +844,7 @@ export interface AdHistory {
   views: number
   clicks: number
   ctr: number
-  status: 'completed'
+  status: 'completed' | 'cancelled'
 }
 
 // 광고 히스토리 더미 데이터

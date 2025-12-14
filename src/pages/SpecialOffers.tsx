@@ -1,20 +1,73 @@
-import { useState } from 'react'
-import { dummySpecialOffers, type SpecialOffer } from '@/constants/dummy'
+import { useState, useEffect } from 'react'
+import { type SpecialOffer } from '@/constants/dummy'
 import SpecialOfferModal, {
   type SpecialOfferFormData,
 } from '@/components/SpecialOfferModal'
+import { productApi, type SpecialOfferProduct } from '@/lib/api/product'
 
 const SpecialOffers = () => {
-  const [specialOffers, setSpecialOffers] =
-    useState<SpecialOffer[]>(dummySpecialOffers)
+  const [specialOffers, setSpecialOffers] = useState<SpecialOffer[]>([])
+  const [specialOfferProducts, setSpecialOfferProducts] = useState<
+    SpecialOfferProduct[]
+  >([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [togglingId, setTogglingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
-  const handleStatusToggle = (id: number) => {
-    setSpecialOffers(prev =>
-      prev.map(offer =>
-        offer.id === id ? { ...offer, status: !offer.status } : offer
+  // API에서 특가 상품 목록 조회
+  const fetchSpecialOffers = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await productApi.getSpecialOffers()
+
+      // 원본 API 응답 저장
+      setSpecialOfferProducts(response.data)
+
+      // API 응답을 SpecialOffer 형식으로 변환
+      const mappedOffers: SpecialOffer[] = response.data.map(
+        (item: SpecialOfferProduct) => ({
+          id: item.id,
+          name: item.product_name,
+          category: item.category_name,
+          originalPrice: item.cost_price,
+          discountedPrice: item.price,
+          salesPeriodStart: item.start_date,
+          salesPeriodEnd: item.end_date,
+          views: parseInt(item.view_count) || 0,
+          orders: item.order_count || 0,
+          status: item.status === 'ACTIVE',
+        })
       )
-    )
+
+      setSpecialOffers(mappedOffers)
+    } catch (err) {
+      setError('특가 상품 목록을 불러오는데 실패했습니다.')
+      console.error('Failed to fetch special offers:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 컴포넌트 마운트 시 특가 상품 목록 조회
+  useEffect(() => {
+    fetchSpecialOffers()
+  }, [])
+
+  const handleStatusToggle = async (id: number) => {
+    try {
+      setTogglingId(id)
+      await productApi.toggleSpecialOfferStatus(id)
+      // 성공 시 목록 새로고침
+      await fetchSpecialOffers()
+    } catch (err) {
+      console.error('Failed to toggle status:', err)
+      alert('상태 변경에 실패했습니다.')
+    } finally {
+      setTogglingId(null)
+    }
   }
 
   const handleEdit = (id: number) => {
@@ -22,9 +75,19 @@ const SpecialOffers = () => {
     console.log('Edit special offer:', id)
   }
 
-  const handleDelete = (id: number) => {
-    if (confirm('정말 삭제하시겠습니까?')) {
-      setSpecialOffers(prev => prev.filter(offer => offer.id !== id))
+  const handleDelete = async (id: number) => {
+    if (!confirm('정말 삭제하시겠습니까?')) return
+
+    try {
+      setDeletingId(id)
+      await productApi.deleteSpecialOffer(id)
+      // 성공 시 목록 새로고침
+      await fetchSpecialOffers()
+    } catch (err) {
+      console.error('Failed to delete special offer:', err)
+      alert('특가 상품 삭제에 실패했습니다.')
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -66,7 +129,9 @@ const SpecialOffers = () => {
         <div>
           <h2 className="text-lg font-bold text-black mb-1">특가 상품 목록</h2>
           <p className="text-sm text-gray-600">
-            총 {specialOffers.length}개의 특가 상품이 있습니다.
+            {loading
+              ? '로딩 중...'
+              : `총 ${specialOffers.length}개의 특가 상품이 있습니다.`}
           </p>
         </div>
         <button
@@ -78,150 +143,220 @@ const SpecialOffers = () => {
         </button>
       </div>
 
+      {/* 에러 메시지 */}
+      {error && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {/* 로딩 상태 */}
+      {loading && (
+        <div className="text-center py-8 text-gray-500">로딩 중...</div>
+      )}
+
       {/* 테이블 */}
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="w-64 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                상품정보
-              </th>
-              <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                카테고리
-              </th>
-              <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                가격
-              </th>
-              <th className="w-48 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                판매기간
-              </th>
-              <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                성과
-              </th>
-              <th className="w-24 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                상태
-              </th>
-              <th className="w-32 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                관리
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {specialOffers.map(offer => (
-              <tr key={offer.id} className="hover:bg-gray-50 transition-colors">
-                {/* 상품정보 */}
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-200 rounded shrink-0" />
-                    <span className="text-sm text-black">{offer.name}</span>
-                  </div>
-                </td>
-
-                {/* 카테고리 */}
-                <td className="px-6 py-4">
-                  <span className="inline-block px-3 py-1 text-xs bg-gray-100 text-black rounded-full">
-                    {offer.category}
-                  </span>
-                </td>
-
-                {/* 가격 */}
-                <td className="px-6 py-4">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-red-600">
-                      {formatPrice(offer.discountedPrice)}원
-                    </span>
-                    <span className="text-xs text-gray-400 line-through">
-                      {formatPrice(offer.originalPrice)}원
-                    </span>
-                  </div>
-                </td>
-
-                {/* 판매기간 */}
-                <td className="px-6 py-4">
-                  <span className="text-sm text-black">
-                    {offer.salesPeriodStart} ~ {offer.salesPeriodEnd}
-                  </span>
-                </td>
-
-                {/* 성과 */}
-                <td className="px-6 py-4">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm text-blue-600">
-                      조회 {offer.views.toLocaleString()}
-                    </span>
-                    <span className="text-sm text-green-600">
-                      주문 {offer.orders.toLocaleString()}
-                    </span>
-                  </div>
-                </td>
-
-                {/* 상태 */}
-                <td className="px-6 py-4">
-                  <div className="flex justify-center">
-                    <button
-                      onClick={() => handleStatusToggle(offer.id)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                        offer.status ? 'bg-black' : 'bg-gray-300'
-                      }`}
-                      aria-label={`상태 ${offer.status ? '활성' : '비활성'}`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          offer.status ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                </td>
-
-                {/* 관리 */}
-                <td className="px-6 py-4">
-                  <div className="flex justify-center gap-2">
-                    <button
-                      onClick={() => handleEdit(offer.id)}
-                      className="p-2 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
-                      aria-label="수정"
-                    >
-                      <svg
-                        className="w-4 h-4 text-gray-700"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleDelete(offer.id)}
-                      className="p-2 bg-red-100 hover:bg-red-200 rounded transition-colors"
-                      aria-label="삭제"
-                    >
-                      <svg
-                        className="w-4 h-4 text-red-700"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                </td>
+      {!loading && !error && (
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="w-64 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  상품정보
+                </th>
+                <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  카테고리
+                </th>
+                <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  가격
+                </th>
+                <th className="w-48 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  판매기간
+                </th>
+                <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  성과
+                </th>
+                <th className="w-24 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  상태
+                </th>
+                <th className="w-32 px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  관리
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {specialOffers.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
+                    등록된 특가 상품이 없습니다.
+                  </td>
+                </tr>
+              ) : (
+                specialOffers.map(offer => {
+                  // 원본 API 응답에서 이미지 URL 찾기
+                  const productData = specialOfferProducts.find(
+                    p => p.id === offer.id
+                  )
+                  const imageUrl = productData?.main_image
+
+                  return (
+                    <tr
+                      key={offer.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      {/* 상품정보 */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          {imageUrl ? (
+                            <img
+                              src={imageUrl}
+                              alt={offer.name}
+                              className="w-12 h-12 object-cover rounded shrink-0"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-gray-200 rounded shrink-0" />
+                          )}
+                          <span className="text-sm text-black">
+                            {offer.name}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* 카테고리 */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-block px-3 py-1 text-xs bg-gray-100 text-black rounded-full whitespace-nowrap">
+                          {offer.category}
+                        </span>
+                      </td>
+
+                      {/* 가격 */}
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-red-600">
+                            {formatPrice(offer.discountedPrice)}원
+                          </span>
+                          <span className="text-xs text-gray-400 line-through">
+                            {formatPrice(offer.originalPrice)}원
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* 판매기간 */}
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-black">
+                          {offer.salesPeriodStart} ~ {offer.salesPeriodEnd}
+                        </span>
+                      </td>
+
+                      {/* 성과 */}
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm text-blue-600">
+                            조회 {offer.views.toLocaleString()}
+                          </span>
+                          <span className="text-sm text-green-600">
+                            주문 {offer.orders.toLocaleString()}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* 상태 */}
+                      <td className="px-6 py-4">
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => handleStatusToggle(offer.id)}
+                            disabled={togglingId === offer.id}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                              offer.status ? 'bg-black' : 'bg-gray-300'
+                            }`}
+                            aria-label={`상태 ${offer.status ? '활성' : '비활성'}`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                offer.status ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      </td>
+
+                      {/* 관리 */}
+                      <td className="px-6 py-4">
+                        <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() => handleEdit(offer.id)}
+                            className="p-2 bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+                            aria-label="수정"
+                          >
+                            <svg
+                              className="w-4 h-4 text-gray-700"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(offer.id)}
+                            disabled={deletingId === offer.id}
+                            className="p-2 bg-red-100 hover:bg-red-200 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label="삭제"
+                          >
+                            {deletingId === offer.id ? (
+                              <svg
+                                className="w-4 h-4 text-red-700 animate-spin"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                />
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                />
+                              </svg>
+                            ) : (
+                              <svg
+                                className="w-4 h-4 text-red-700"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* 특가 상품 등록 모달 */}
       <SpecialOfferModal

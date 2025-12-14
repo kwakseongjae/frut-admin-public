@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface CategoryModalProps {
   isOpen: boolean
@@ -7,6 +7,8 @@ interface CategoryModalProps {
   title: string
   isSubMenu?: boolean
   parentCategories?: Array<{ id: number; name: string }>
+  isLoading?: boolean
+  error?: string | null
 }
 
 const CategoryModal = ({
@@ -16,18 +18,35 @@ const CategoryModal = ({
   title,
   isSubMenu = false,
   parentCategories = [],
+  isLoading = false,
+  error,
 }: CategoryModalProps) => {
   const [categoryName, setCategoryName] = useState('')
   const [selectedParentId, setSelectedParentId] = useState<number | ''>('')
 
+  // 모달이 닫힐 때 폼 초기화
+  useEffect(() => {
+    if (!isOpen) {
+      setCategoryName('')
+      setSelectedParentId('')
+    }
+  }, [isOpen])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (categoryName.trim()) {
+    if (categoryName.trim() && !isLoading) {
       if (isSubMenu && selectedParentId) {
         onAddCategory(categoryName.trim(), selectedParentId as number)
       } else {
         onAddCategory(categoryName.trim())
       }
+      // 성공 시 모달 닫기는 부모 컴포넌트에서 처리
+    }
+  }
+
+  // 모달이 닫힐 때 폼 초기화
+  const handleClose = () => {
+    if (!isLoading) {
       setCategoryName('')
       setSelectedParentId('')
       onClose()
@@ -39,7 +58,7 @@ const CategoryModal = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
 
       {/* Modal */}
       <div className="relative bg-white rounded-lg shadow-xl w-96 max-w-md mx-4">
@@ -99,18 +118,24 @@ const CategoryModal = ({
               placeholder={
                 isSubMenu ? '소메뉴명을 입력하세요' : '대메뉴명을 입력하세요'
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                error ? 'border-red-500' : 'border-gray-300'
+              }`}
               required
             />
+            {error && (
+              <p className="mt-1 text-sm text-red-600">{error}</p>
+            )}
           </div>
 
           {/* Footer */}
           <div className="flex justify-end">
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              disabled={isLoading}
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              추가
+              {isLoading ? '추가 중...' : '추가'}
             </button>
           </div>
         </form>

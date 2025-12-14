@@ -8,3 +8,28 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
 }
+
+/* Always show horizontal scrollbar for coupon table */
+.coupon-table-scroll {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #cbd5e1 #f1f5f9; /* Firefox */
+}
+
+.coupon-table-scroll::-webkit-scrollbar {
+  height: 8px; /* Chrome, Safari, Edge */
+  display: block; /* Always show */
+}
+
+.coupon-table-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9; /* Track color */
+  border-radius: 4px;
+}
+
+.coupon-table-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* Thumb color */
+  border-radius: 4px;
+}
+
+.coupon-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* Thumb hover color */
+}

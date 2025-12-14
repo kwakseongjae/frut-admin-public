@@ -6,8 +6,7 @@ const Header = () => {
   // 현재 페이지 제목 매핑
   const getPageTitle = (pathname: string) => {
     const titleMap: Record<string, string> = {
-      '/': '관리자 프로필',
-      '/admin-profile': '관리자 프로필',
+      '/': '유저관리',
       '/user-management': '유저관리',
       '/seller-application': '판매자 신청관리',
       '/product-management': '상품관리',
