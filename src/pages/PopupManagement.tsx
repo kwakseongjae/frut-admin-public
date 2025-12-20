@@ -205,6 +205,38 @@ const PopupManagement = () => {
                   </div>
                 </div>
 
+                {/* 연결 URL */}
+                {popup.popup_url && (
+                  <div className="mb-4">
+                    <span className="text-sm text-gray-500 block mb-1">
+                      연결 URL
+                    </span>
+                    <a
+                      href={popup.popup_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 underline"
+                    >
+                      <span className="truncate max-w-[200px]">
+                        {popup.popup_url}
+                      </span>
+                      <svg
+                        className="w-4 h-4 shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                    </a>
+                  </div>
+                )}
+
                 {/* 액션 버튼 */}
                 <div className="flex gap-2">
                   <button

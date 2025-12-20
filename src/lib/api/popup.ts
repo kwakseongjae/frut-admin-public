@@ -6,6 +6,7 @@ export interface Popup {
   popup_title: string
   popup_content: string
   popup_image: string
+  popup_url?: string
   start_date: string
   end_date: string
   is_active: boolean
