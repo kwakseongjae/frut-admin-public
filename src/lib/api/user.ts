@@ -78,6 +78,7 @@ export interface UpdateUserRequest {
   profile_image?: string
   user_type?: 'SELLER' | 'BUYER' | 'ADMIN'
   user_note?: string
+  is_marketing_consented?: boolean
 }
 
 export const userApi = {

@@ -7,7 +7,7 @@ interface UserListProps {
 
 const UserList = ({ users, onSort }: UserListProps) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full table-fixed divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -87,15 +87,17 @@ const UserList = ({ users, onSort }: UserListProps) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {users.map(user => (
+            {users.map((user, index) => (
               <tr
                 key={user.id}
-                className="hover:bg-gray-50 cursor-pointer"
+                className="hover:bg-gray-50 cursor-pointer transition-colors"
                 onClick={() =>
                   (window.location.href = `/user-detail/${user.id}`)
                 }
               >
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center ${
+                  index === 0 ? 'rounded-tl-lg' : ''
+                } ${index === users.length - 1 ? 'rounded-bl-lg' : ''}`}>
                   {user.id}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -123,7 +125,9 @@ const UserList = ({ users, onSort }: UserListProps) => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {user.date_joined}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
+                <td className={`px-6 py-4 whitespace-nowrap text-center ${
+                  index === 0 ? 'rounded-tr-lg' : ''
+                } ${index === users.length - 1 ? 'rounded-br-lg' : ''}`}>
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       user.status === 'WITHDRAWN'
@@ -133,7 +137,7 @@ const UserList = ({ users, onSort }: UserListProps) => {
                           : 'bg-green-100 text-green-800'
                     }`}
                   >
-                    {user.status_display}
+                    {user.status === 'ACTIVE' ? '회원' : user.status_display}
                   </span>
                 </td>
               </tr>

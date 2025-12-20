@@ -8,7 +8,7 @@ const SellerApplicationList = ({
   applications,
 }: SellerApplicationListProps) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full table-fixed divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -31,9 +31,11 @@ const SellerApplicationList = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {applications.map(application => (
-              <tr key={application.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+            {applications.map((application, index) => (
+              <tr key={application.id} className="hover:bg-gray-50 transition-colors">
+                <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center ${
+                  index === 0 ? 'rounded-tl-lg' : ''
+                } ${index === applications.length - 1 ? 'rounded-bl-lg' : ''}`}>
                   {application.id}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -45,7 +47,9 @@ const SellerApplicationList = ({
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {application.registrationDate || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center">
+                <td className={`px-6 py-4 whitespace-nowrap text-center ${
+                  index === 0 ? 'rounded-tr-lg' : ''
+                } ${index === applications.length - 1 ? 'rounded-br-lg' : ''}`}>
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       application.isBusiness

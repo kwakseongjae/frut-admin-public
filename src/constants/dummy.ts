@@ -779,6 +779,7 @@ export interface Ad {
   id: number
   title: string
   advertiser: string
+  adType?: 'MAIN' | 'MIDDLE' | 'MYPAGE'
   isActive: boolean
   status: 'in_progress' | 'pending' | 'review' | 'completed' | 'canceled'
   imageUrl?: string

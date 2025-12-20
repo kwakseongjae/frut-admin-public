@@ -26,6 +26,9 @@ const UserDetail = () => {
     email: '',
   })
 
+  // 동의 정보 상태 (마케팅수신 동의만 변경 가능)
+  const [marketingConsented, setMarketingConsented] = useState(false)
+
   useEffect(() => {
     const fetchUserDetail = async () => {
       if (!id) return
@@ -42,6 +45,8 @@ const UserDetail = () => {
           username: response.data.username,
           email: response.data.email,
         })
+        // 마케팅수신 동의 초기화
+        setMarketingConsented(response.data.is_marketing_consented || false)
       } catch (err) {
         setError('유저 정보를 불러오는데 실패했습니다.')
         console.error('Failed to fetch user detail:', err)
@@ -158,6 +163,7 @@ const UserDetail = () => {
         username?: string
         email?: string
         user_note?: string
+        is_marketing_consented?: boolean
       } = {}
 
       if (formData.name !== user.name) {
@@ -174,6 +180,9 @@ const UserDetail = () => {
       }
       if (memo !== (user.user_note || '')) {
         updateData.user_note = memo || undefined
+      }
+      if (marketingConsented !== user.is_marketing_consented) {
+        updateData.is_marketing_consented = marketingConsented
       }
 
       // 변경사항이 없으면 리턴
@@ -198,6 +207,8 @@ const UserDetail = () => {
         username: response.data.username,
         email: response.data.email,
       })
+      // 마케팅수신 동의 상태 업데이트
+      setMarketingConsented(response.data.is_marketing_consented || false)
       setSuccessMessage('유저 정보가 성공적으로 저장되었습니다.')
       setFieldErrors({})
     } catch (err: any) {
@@ -613,21 +624,6 @@ const UserDetail = () => {
                   </p>
                 )}
               </div>
-
-              <div className="flex flex-col">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  유저 타입
-                </label>
-                <div className="px-4 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {user.user_type === 'SELLER'
-                      ? '판매자'
-                      : user.user_type === 'BUYER'
-                        ? '소비자'
-                        : '관리자'}
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -636,43 +632,44 @@ const UserDetail = () => {
             <h2 className="text-lg font-bold text-gray-900 mb-6">동의 정보</h2>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={true}
+                  disabled
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-not-allowed opacity-50"
+                />
+                <span className="ml-3 text-sm text-gray-700">
                   이용약관 동의 (필수)
                 </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  동의
-                </span>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={true}
+                  disabled
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-not-allowed opacity-50"
+                />
+                <span className="ml-3 text-sm text-gray-700">
                   개인정보처리방침 동의 (필수)
                 </span>
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user.seller_info?.privacy_policy_agreed
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}
-                >
-                  {user.seller_info?.privacy_policy_agreed ? '동의' : '미동의'}
-                </span>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">
-                  마케팅수신 동의 (선택)
-                </span>
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user.is_marketing_consented
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="marketing-consent"
+                  checked={marketingConsented}
+                  onChange={e => setMarketingConsented(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                />
+                <label
+                  htmlFor="marketing-consent"
+                  className="ml-3 text-sm text-gray-700 cursor-pointer"
                 >
-                  {user.is_marketing_consented ? '동의' : '미동의'}
-                </span>
+                  마케팅수신 동의 (선택)
+                </label>
               </div>
             </div>
           </div>
@@ -699,20 +696,20 @@ const UserDetail = () => {
         {/* 오른쪽 컬럼 */}
         <div className="space-y-6">
           {/* 활동 정보 */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">활동 정보</h2>
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            <h2 className="text-base font-bold text-black mb-4">활동 정보</h2>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">가입일</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-500">가입일</span>
+                <span className="text-sm font-medium text-black">
                   {formatDate(user.date_joined)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">구매 횟수</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-500">구매 횟수</span>
+                <span className="text-sm font-medium text-black">
                   {(user.activity_history || []).filter(
                     a => a.type === 'purchase'
                   ).length || 0}
@@ -768,22 +765,22 @@ const UserDetail = () => {
           </div>
 
           {/* 포인트 */}
-          <div className="bg-white rounded-2xl p-8 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-6">포인트</h2>
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            <h2 className="text-base font-bold text-black mb-4">포인트</h2>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">포인트 잔액</span>
-                <span className="text-lg font-bold text-blue-600">
-                  {user.point_balance.toLocaleString()}P
+                <span className="text-sm text-gray-500">가입일</span>
+                <span className="text-sm font-medium text-black">
+                  {formatDate(user.date_joined)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">포인트 사용 횟수</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-500">구매 횟수</span>
+                <span className="text-sm font-medium text-black">
                   {(user.activity_history || []).filter(
-                    a => a.type === 'point_use'
+                    a => a.type === 'purchase'
                   ).length || 0}
                   회
                 </span>

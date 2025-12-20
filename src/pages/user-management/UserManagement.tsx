@@ -165,9 +165,7 @@ const UserManagement = () => {
   const getStatusText = () => {
     switch (statusFilter) {
       case 'ACTIVE':
-        return '활성'
-      case 'BLOCKED':
-        return '차단'
+        return '회원'
       case 'WITHDRAWN':
         return '탈퇴'
       default:
@@ -312,18 +310,7 @@ const UserManagement = () => {
                       : 'text-gray-700'
                   }`}
                 >
-                  활성
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleStatusFilterChange('BLOCKED')}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg ${
-                    statusFilter === 'BLOCKED'
-                      ? 'bg-blue-50 text-blue-700 font-medium'
-                      : 'text-gray-700'
-                  }`}
-                >
-                  차단
+                  회원
                 </button>
                 <button
                   type="button"

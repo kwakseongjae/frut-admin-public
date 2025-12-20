@@ -79,7 +79,7 @@ const ProductList = ({ products, onSort, onRefresh }: ProductListProps) => {
     return typeof badge === 'object' && 'id' in badge && 'badge_id' in badge
   }
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full table-fixed divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -121,10 +121,12 @@ const ProductList = ({ products, onSort, onRefresh }: ProductListProps) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {products.map(product => (
-              <tr key={product.id} className="hover:bg-gray-50 cursor-pointer">
+            {products.map((product, index) => (
+              <tr key={product.id} className="hover:bg-gray-50 cursor-pointer transition-colors">
                 {/* 상품 컬럼 - 이미지와 상품명, 카테고리 */}
-                <td className="px-6 py-4">
+                <td className={`px-6 py-4 ${
+                  index === 0 ? 'rounded-tl-lg' : ''
+                } ${index === products.length - 1 ? 'rounded-bl-lg' : ''}`}>
                   <div className="flex items-center space-x-3">
                     {product.main_image ? (
                       <img
@@ -154,8 +156,15 @@ const ProductList = ({ products, onSort, onRefresh }: ProductListProps) => {
                 </td>
 
                 {/* 가격 컬럼 */}
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                  {product.display_price.toLocaleString()}원
+                <td className="px-6 py-4 text-center">
+                  <div className="flex flex-col items-center">
+                    <span className="text-sm font-bold text-red-600">
+                      {product.display_cost_price.toLocaleString()}원
+                    </span>
+                    <span className="text-xs text-gray-400 line-through">
+                      {product.display_price.toLocaleString()}원
+                    </span>
+                  </div>
                 </td>
 
                 {/* 상태 컬럼 */}
@@ -276,7 +285,9 @@ const ProductList = ({ products, onSort, onRefresh }: ProductListProps) => {
                 </td>
 
                 {/* 관리 컬럼 - 추천지정과 뱃지 버튼 */}
-                <td className="px-6 py-4 whitespace-nowrap text-center">
+                <td className={`px-6 py-4 whitespace-nowrap text-center ${
+                  index === 0 ? 'rounded-tr-lg' : ''
+                } ${index === products.length - 1 ? 'rounded-br-lg' : ''}`}>
                   <div className="flex space-x-1">
                     <button
                       type="button"

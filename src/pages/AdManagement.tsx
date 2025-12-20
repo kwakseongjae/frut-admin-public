@@ -70,6 +70,7 @@ const AdManagement = () => {
             id: item.id,
             title: item.ad_title,
             advertiser: item.ad_company,
+            adType: item.ad_type,
             isActive: item.is_active,
             status,
             imageUrl: item.ad_image,
@@ -403,7 +404,11 @@ const AdManagement = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-lg font-semibold text-black">
-                          {ad.title}
+                          {ad.adType === 'MAIN'
+                            ? '메인 페이지 광고'
+                            : ad.adType === 'MIDDLE'
+                              ? '중간 광고'
+                              : '마이페이지 광고'}
                         </h3>
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -425,6 +430,9 @@ const AdManagement = () => {
                                 : '중지'}
                         </span>
                       </div>
+                      <p className="text-sm font-medium text-black mb-1">
+                        {ad.title}
+                      </p>
                       <p className="text-sm text-gray-500">{ad.advertiser}</p>
                     </div>
                     <button

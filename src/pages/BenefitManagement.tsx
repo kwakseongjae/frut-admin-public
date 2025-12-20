@@ -429,13 +429,28 @@ const BenefitManagement = () => {
                   >
                     {/* 쿠폰명 */}
                     <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-black truncate">
+                      <div className="flex flex-col group relative">
+                        <span
+                          className="text-sm font-medium text-black truncate"
+                          title={coupon.name}
+                        >
                           {coupon.name}
                         </span>
-                        <span className="text-xs text-gray-500 mt-1 truncate">
+                        <span
+                          className="text-xs text-gray-500 mt-1 truncate"
+                          title={coupon.description}
+                        >
                           {coupon.description}
                         </span>
+                        {/* 호버 시 전체 내용 표시 */}
+                        <div className="absolute left-0 top-0 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity delay-500 duration-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-[200px] max-w-[400px]">
+                          <div className="text-sm font-medium text-black mb-2">
+                            {coupon.name}
+                          </div>
+                          <div className="text-xs text-gray-500 whitespace-normal">
+                            {coupon.description}
+                          </div>
+                        </div>
                       </div>
                     </td>
 
