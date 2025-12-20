@@ -32,13 +32,24 @@ const PointManagement = () => {
     effective_date?: string
   }>({})
   const [formLoading, setFormLoading] = useState(false)
+  // 년월 선택 상태
+  const currentDate = new Date()
+  const [selectedYear, setSelectedYear] = useState<number>(
+    currentDate.getFullYear()
+  )
+  const [selectedMonth, setSelectedMonth] = useState<number>(
+    currentDate.getMonth() + 1
+  )
 
   // API에서 포인트 내역 조회
   const fetchPointHistory = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await benefitApi.getPointHistory()
+      const response = await benefitApi.getPointHistory({
+        year: selectedYear,
+        month: selectedMonth,
+      })
 
       // API 응답 구조 확인
       const data =
@@ -56,7 +67,7 @@ const PointManagement = () => {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [selectedYear, selectedMonth])
 
   // API에서 포인트 시스템 상태 조회
   const fetchPointSystemStatus = useCallback(async () => {
@@ -118,9 +129,12 @@ const PointManagement = () => {
 
   useEffect(() => {
     fetchPointHistory()
+  }, [fetchPointHistory])
+
+  useEffect(() => {
     fetchPointSystemStatus()
     fetchCurrentRate()
-  }, [fetchPointHistory, fetchPointSystemStatus, fetchCurrentRate])
+  }, [fetchPointSystemStatus, fetchCurrentRate])
 
   const handleSettingsToggle = async () => {
     const newStatus = !settings.isEnabled
@@ -628,15 +642,48 @@ const PointManagement = () => {
         </div>
       </div>
 
-      {/* 최근 포인트 내역 */}
+      {/* 포인트 내역 */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-gray-900 mb-1">
-            최근 포인트 내역
+            포인트 내역
           </h2>
           <p className="text-sm text-gray-500">
-            최근 포인트 적립, 사용, 취소 내역을 확인할 수 있습니다.
+            포인트 적립, 사용, 취소 내역을 확인할 수 있습니다.
           </p>
+        </div>
+
+        {/* 기간 설정 */}
+        <div className="mb-6 flex items-center gap-4">
+          <span className="text-sm font-medium text-gray-700">기간설정</span>
+          <select
+            value={selectedYear}
+            onChange={e => setSelectedYear(Number(e.target.value))}
+            className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {Array.from({ length: 5 }, (_, i) => {
+              const year = currentDate.getFullYear() - 2 + i
+              return (
+                <option key={year} value={year}>
+                  {year}년
+                </option>
+              )
+            })}
+          </select>
+          <select
+            value={selectedMonth}
+            onChange={e => setSelectedMonth(Number(e.target.value))}
+            className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            {Array.from({ length: 12 }, (_, i) => {
+              const month = i + 1
+              return (
+                <option key={month} value={month}>
+                  {month}월
+                </option>
+              )
+            })}
+          </select>
         </div>
 
         <div className="overflow-x-auto">

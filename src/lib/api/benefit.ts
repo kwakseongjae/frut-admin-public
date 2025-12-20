@@ -80,9 +80,16 @@ export interface CreatePointRateRequest {
 export type CreatePointRateResponse = ApiResponse<PointRate>
 
 export const benefitApi = {
-  getPointHistory: async (): Promise<PointHistoryResponse> => {
+  getPointHistory: async (params?: {
+    year?: number
+    month?: number
+    page?: number
+  }): Promise<PointHistoryResponse> => {
     const response = await apiClient.get<PointHistoryResponse>(
-      '/api/benefits/admin/points'
+      '/api/benefits/admin/points',
+      {
+        params,
+      }
     )
     return response.data
   },

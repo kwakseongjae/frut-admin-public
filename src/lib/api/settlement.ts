@@ -189,4 +189,14 @@ export const settlementApi = {
     )
     return response.data
   },
+
+  exportSellerSettlements: async (
+    params: GetSellerSettlementsParams
+  ): Promise<Blob> => {
+    const response = await apiClient.get('/api/settlements/admin/export', {
+      params,
+      responseType: 'blob',
+    })
+    return response.data
+  },
 }

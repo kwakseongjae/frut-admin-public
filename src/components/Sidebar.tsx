@@ -97,15 +97,15 @@ const Sidebar = () => {
         // { label: '광고 문의', path: '/ad-inquiry' },
       ],
     },
-    // {
-    //   path: '/customer-service',
-    //   label: '고객센터',
-    //   icon: 'headphone',
-    //   subpages: [
-    //     { label: '공지사항', path: '/customer-ad-management' },
-    //     { label: 'FAQ', path: '/customer-ad-inquiry' },
-    //   ],
-    // },
+    {
+      path: '/customer-service',
+      label: '고객센터',
+      icon: 'headphone',
+      subpages: [
+        { label: '공지사항 관리', path: '/customer-service/notice' },
+        { label: 'FAQ 관리', path: '/customer-service/faq' },
+      ],
+    },
     {
       path: '/popup-management',
       label: '팝업관리',

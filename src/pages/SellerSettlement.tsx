@@ -93,9 +93,30 @@ const SellerSettlement = () => {
     fetchSellerSettlements()
   }, [fetchSellerSettlements])
 
-  const handleExcelDownload = () => {
-    // TODO: 엑셀 다운로드 기능
-    console.log('Excel download:', settlementMonth, settlementRound)
+  const handleExcelDownload = async () => {
+    try {
+      const params = getApiParams()
+      
+      const blob = await settlementApi.exportSellerSettlements(params)
+      
+      // 파일명 생성: 판매자별정산_YYYY-MM_차수.xlsx
+      const [year, month] = settlementMonth.split('-')
+      const periodText = settlementRound === '1' ? '1차' : '2차'
+      const filename = `판매자별정산_${year}-${month}_${periodText}.xlsx`
+      
+      // Blob을 URL로 변환하여 다운로드
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Failed to download Excel:', err)
+      setError('엑셀 다운로드에 실패했습니다.')
+    }
   }
 
   const handleSettlementComplete = async (id: number) => {
@@ -198,7 +219,7 @@ const SellerSettlement = () => {
           </div>
           <button
             onClick={handleExcelDownload}
-            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors ml-2"
           >
             엑셀 다운로드
           </button>

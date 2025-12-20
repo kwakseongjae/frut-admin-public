@@ -112,12 +112,22 @@ export const router = createBrowserRouter([
             lazy: () => import('@/pages/CustomerService'), // 고객센터 페이지
           },
           {
-            path: 'customer-ad-management',
-            lazy: () => import('@/pages/CustomerService'), // 공지사항 페이지
+            path: 'customer-service/notice',
+            lazy: () =>
+              import('@/pages/customer-service/NoticeManagement').then(
+                module => ({
+                  Component: module.default,
+                })
+              ), // 공지사항 관리 페이지
           },
           {
-            path: 'customer-ad-inquiry',
-            lazy: () => import('@/pages/CustomerService'), // FAQ 페이지
+            path: 'customer-service/faq',
+            lazy: () =>
+              import('@/pages/customer-service/FAQManagement').then(
+                module => ({
+                  Component: module.default,
+                })
+              ), // FAQ 관리 페이지
           },
           {
             path: 'popup-management',
