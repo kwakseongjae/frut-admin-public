@@ -5,6 +5,14 @@ const Header = () => {
 
   // 현재 페이지 제목 매핑
   const getPageTitle = (pathname: string) => {
+    // 동적 경로 처리
+    if (pathname.startsWith('/seller-application/')) {
+      return '판매자 신청 상세'
+    }
+    if (pathname.startsWith('/user-detail/')) {
+      return '유저 상세'
+    }
+    
     const titleMap: Record<string, string> = {
       '/': '유저관리',
       '/user-management': '유저관리',

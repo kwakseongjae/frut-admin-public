@@ -136,3 +136,60 @@ export const uploadImageFile = async (
   return signedUrlResponse.data.gcs_path
 }
 
+/**
+ * Content 업로드용 Signed URL 생성 요청 타입
+ */
+export interface GenerateContentUploadSignedUrlRequest {
+  file_name: string
+  content_type: string
+}
+
+/**
+ * Content 업로드용 Signed URL 생성 응답 타입
+ */
+export interface GenerateContentUploadSignedUrlResponse extends ApiResponse<{
+  signed_url: string
+  gcs_path: string
+}> {}
+
+/**
+ * Content 업로드용 Signed URL 생성 API
+ */
+export const generateContentUploadSignedUrl = async (
+  data: GenerateContentUploadSignedUrlRequest
+): Promise<GenerateContentUploadSignedUrlResponse> => {
+  const response = await apiClient.post<GenerateContentUploadSignedUrlResponse>(
+    '/api/generate-content-upload-signed-url',
+    data
+  )
+  return response.data
+}
+
+/**
+ * Content 읽기용 Signed URL 생성 요청 타입
+ */
+export interface GenerateContentReadSignedUrlRequest {
+  gcs_path: string
+}
+
+/**
+ * Content 읽기용 Signed URL 생성 응답 타입
+ */
+export interface GenerateContentReadSignedUrlResponse extends ApiResponse<{
+  gcs_path: string
+  signed_url: string
+}> {}
+
+/**
+ * Content 읽기용 Signed URL 생성 API
+ */
+export const generateContentReadSignedUrl = async (
+  data: GenerateContentReadSignedUrlRequest
+): Promise<GenerateContentReadSignedUrlResponse> => {
+  const response = await apiClient.post<GenerateContentReadSignedUrlResponse>(
+    '/api/generate-content-read-signed-url',
+    data
+  )
+  return response.data
+}
+

@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { type SpecialOffer } from '@/constants/dummy'
-import SpecialOfferModal, {
-  type SpecialOfferFormData,
-} from '@/components/SpecialOfferModal'
+import SpecialOfferModal from '@/components/SpecialOfferModal'
 import { productApi, type SpecialOfferProduct } from '@/lib/api/product'
 
 const SpecialOffers = () => {
@@ -11,6 +9,7 @@ const SpecialOffers = () => {
     SpecialOfferProduct[]
   >([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingId, setEditingId] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [togglingId, setTogglingId] = useState<number | null>(null)
@@ -71,8 +70,8 @@ const SpecialOffers = () => {
   }
 
   const handleEdit = (id: number) => {
-    // TODO: Edit functionality
-    console.log('Edit special offer:', id)
+    setEditingId(id)
+    setIsModalOpen(true)
   }
 
   const handleDelete = async (id: number) => {
@@ -95,28 +94,9 @@ const SpecialOffers = () => {
     setIsModalOpen(true)
   }
 
-  const handleRegister = (formData: SpecialOfferFormData) => {
-    // 새로운 특가 상품 생성
-    const newId =
-      specialOffers.length > 0
-        ? Math.max(...specialOffers.map(o => o.id)) + 1
-        : 1
-
-    const newOffer: SpecialOffer = {
-      id: newId,
-      name: formData.productName,
-      category: `${formData.mainCategory} > ${formData.subCategory}`,
-      originalPrice: formData.originalPrice,
-      discountedPrice: formData.discountedPrice,
-      salesPeriodStart: formData.startDate,
-      salesPeriodEnd: formData.endDate,
-      views: 0,
-      orders: 0,
-      status: true,
-    }
-
-    setSpecialOffers(prev => [...prev, newOffer])
-    setIsModalOpen(false)
+  const handleRegister = async () => {
+    // 등록/수정 후 리스트 새로고침
+    await fetchSpecialOffers()
   }
 
   const formatPrice = (price: number) => {
@@ -361,8 +341,12 @@ const SpecialOffers = () => {
       {/* 특가 상품 등록 모달 */}
       <SpecialOfferModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false)
+          setEditingId(null)
+        }}
         onRegister={handleRegister}
+        editId={editingId || undefined}
       />
     </div>
   )

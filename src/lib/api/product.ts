@@ -83,7 +83,72 @@ export interface SpecialOfferProduct {
   updated_at: string
 }
 
+export interface SpecialOfferImage {
+  id: number
+  image_url: string
+  gcs_path: string
+  sort_order: number
+  is_main: boolean
+}
+
+export interface SpecialOfferOption {
+  id: number
+  name: string
+  price: number
+  cost_price: number
+  discount_rate: number
+}
+
+export interface SpecialOfferProductDetail {
+  id: number
+  farm_id: number
+  farm_name: string
+  farm_image: string
+  category_id: number
+  category_name: string
+  product_name: string
+  product_description: string | null
+  detail_content: string | null
+  display_cost_price: number
+  display_price: number
+  display_discount_rate: number
+  producer_name: string | null
+  producer_location: string | null
+  production_date: string | null
+  production_year: number | null
+  expiry_type: string | null
+  legal_notice: string | null
+  product_composition: string | null
+  handling_method: string | null
+  customer_service_phone: string | null
+  status: 'ACTIVE' | 'INACTIVE'
+  is_special: boolean
+  rating_avg: string
+  review_count: number
+  view_count: number
+  days_remaining: number
+  delivery_fee: number
+  images: SpecialOfferImage[]
+  options: SpecialOfferOption[]
+  is_wished: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface SpecialOfferDetail {
+  id: number
+  product: SpecialOfferProductDetail
+  start_date: string
+  end_date: string
+  status: 'ACTIVE' | 'INACTIVE'
+  view_count: string
+  delivery_fee: number
+  created_at: string
+  updated_at: string
+}
+
 export type SpecialOffersResponse = ApiResponse<SpecialOfferProduct[]>
+export type SpecialOfferDetailResponse = ApiResponse<SpecialOfferDetail>
 
 export const productApi = {
   getProductList: async (
@@ -154,6 +219,46 @@ export const productApi = {
   deleteSpecialOffer: async (id: number): Promise<ApiResponse<null>> => {
     const response = await apiClient.delete<ApiResponse<null>>(
       `/api/products/special/${id}`
+    )
+    return response.data
+  },
+
+  createSpecialOffer: async (
+    formData: FormData
+  ): Promise<ApiResponse<SpecialOfferProduct>> => {
+    const response = await apiClient.post<ApiResponse<SpecialOfferProduct>>(
+      '/api/products/special',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    )
+    return response.data
+  },
+
+  getSpecialOfferDetail: async (
+    id: number
+  ): Promise<SpecialOfferDetailResponse> => {
+    const response = await apiClient.get<SpecialOfferDetailResponse>(
+      `/api/products/special/${id}`
+    )
+    return response.data
+  },
+
+  updateSpecialOffer: async (
+    id: number,
+    formData: FormData
+  ): Promise<ApiResponse<SpecialOfferProduct>> => {
+    const response = await apiClient.put<ApiResponse<SpecialOfferProduct>>(
+      `/api/products/special/${id}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
     )
     return response.data
   },

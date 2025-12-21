@@ -42,9 +42,11 @@ export interface UpdateCategoryRequest {
 }
 
 export const categoryApi = {
-  getCategories: async (): Promise<CategoriesResponse> => {
+  getCategories: async (isActive?: boolean): Promise<CategoriesResponse> => {
+    const params = isActive !== undefined ? { is_active: isActive } : {}
     const response = await apiClient.get<CategoriesResponse>(
-      '/api/products/categories'
+      '/api/products/categories',
+      { params }
     )
     return response.data
   },

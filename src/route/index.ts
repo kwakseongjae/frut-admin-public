@@ -37,6 +37,15 @@ export const router = createBrowserRouter([
               ), // 판매자 신청 관리 페이지
           },
           {
+            path: 'seller-application/:id',
+            lazy: () =>
+              import('@/pages/user-management/SellerApplicationDetail').then(
+                module => ({
+                  Component: module.default,
+                })
+              ), // 판매자 신청 상세 페이지
+          },
+          {
             path: 'user-detail/:id',
             lazy: () => import('@/pages/user-management/UserDetail'), // 유저 상세 페이지
           },

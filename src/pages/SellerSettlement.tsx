@@ -440,10 +440,10 @@ const SellerSettlement = () => {
                   취소 금액
                 </th>
                 <th className="w-32 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  수수료 (7%)
+                  수수료 (8%)
                 </th>
                 <th className="w-32 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  부가가치세 (0.7%)
+                  부가가치세 (0.8%)
                 </th>
                 <th className="w-32 px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   이월 금액
