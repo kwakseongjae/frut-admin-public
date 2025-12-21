@@ -4,8 +4,12 @@ import { useLogin } from '@/hooks/useAuth'
 import { authStorage } from '@/lib/auth'
 
 const Login = () => {
-  const [username, setUsername] = useState('admin0')
-  const [password, setPassword] = useState('kingbus12')
+  const [username, setUsername] = useState(
+    import.meta.env.VITE_DEFAULT_USERNAME || ''
+  )
+  const [password, setPassword] = useState(
+    import.meta.env.VITE_DEFAULT_PASSWORD || ''
+  )
   const loginMutation = useLogin()
   const navigate = useNavigate()
 
@@ -37,7 +41,7 @@ const Login = () => {
               id="username"
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={e => setUsername(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
@@ -53,7 +57,7 @@ const Login = () => {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
@@ -72,4 +76,3 @@ const Login = () => {
 }
 
 export default Login
-
