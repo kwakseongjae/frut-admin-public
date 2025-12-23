@@ -4,6 +4,7 @@ import {
   type CreateCategoryRequest,
   type CreateSubCategoryRequest,
   type UpdateCategoryRequest,
+  type ReorderCategoriesRequest,
 } from '@/lib/api/category'
 
 export const useCategories = () => {
@@ -74,6 +75,19 @@ export const useDeleteCategory = () => {
 
   return useMutation({
     mutationFn: (id: number) => categoryApi.deleteCategory(id),
+    onSuccess: () => {
+      // 카테고리 목록 refetch
+      queryClient.invalidateQueries({ queryKey: ['categories'] })
+    },
+  })
+}
+
+export const useReorderCategories = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (data: ReorderCategoriesRequest) =>
+      categoryApi.reorderCategories(data),
     onSuccess: () => {
       // 카테고리 목록 refetch
       queryClient.invalidateQueries({ queryKey: ['categories'] })

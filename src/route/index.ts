@@ -77,6 +77,15 @@ export const router = createBrowserRouter([
               ), // 뱃지 관리 페이지
           },
           {
+            path: 'recommended-search-term-management',
+            lazy: () =>
+              import(
+                '@/pages/product-management/RecommendedSearchTermManagement'
+              ).then(module => ({
+                Component: module.default,
+              })), // 추천 검색어 관리 페이지
+          },
+          {
             path: 'special-offers',
             lazy: () => import('@/pages/SpecialOffers'), // 특가 페이지
           },

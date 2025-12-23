@@ -41,6 +41,11 @@ export interface UpdateCategoryRequest {
   is_active: boolean
 }
 
+export interface ReorderCategoriesRequest {
+  category_ids: number[]
+  parent_category_id: number | null
+}
+
 export const categoryApi = {
   getCategories: async (isActive?: boolean): Promise<CategoriesResponse> => {
     const params = isActive !== undefined ? { is_active: isActive } : {}
@@ -101,6 +106,16 @@ export const categoryApi = {
         message: '카테고리가 성공적으로 삭제되었습니다.',
       }
     }
+    return response.data
+  },
+
+  reorderCategories: async (
+    data: ReorderCategoriesRequest
+  ): Promise<ApiResponse<null>> => {
+    const response = await apiClient.patch<ApiResponse<null>>(
+      '/api/products/categories/reorder',
+      data
+    )
     return response.data
   },
 }

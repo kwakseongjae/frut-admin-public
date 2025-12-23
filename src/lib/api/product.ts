@@ -263,3 +263,52 @@ export const productApi = {
     return response.data
   },
 }
+
+// 추천 검색어 관련 타입 및 API
+export interface RecommendedSearchTerm {
+  id: number
+  term: string
+  created_at: string
+  updated_at: string
+}
+
+export type RecommendedSearchTermsResponse = ApiResponse<RecommendedSearchTerm[]>
+
+export interface CreateRecommendedSearchTermRequest {
+  term: string
+}
+
+export const recommendedSearchTermApi = {
+  getRecommendedSearchTerms: async (): Promise<RecommendedSearchTermsResponse> => {
+    const response = await apiClient.get<RecommendedSearchTermsResponse>(
+      '/api/products/search-terms/recommended'
+    )
+    return response.data
+  },
+
+  createRecommendedSearchTerm: async (
+    data: CreateRecommendedSearchTermRequest
+  ): Promise<ApiResponse<RecommendedSearchTerm>> => {
+    const response = await apiClient.post<ApiResponse<RecommendedSearchTerm>>(
+      '/api/products/search-terms/recommended',
+      data
+    )
+    return response.data
+  },
+
+  deleteRecommendedSearchTerm: async (
+    id: number
+  ): Promise<ApiResponse<null>> => {
+    const response = await apiClient.delete<ApiResponse<null>>(
+      `/api/products/search-terms/recommended/${id}`
+    )
+    if (response.status === 204) {
+      return {
+        success: true,
+        data: null,
+        message: '추천 검색어가 성공적으로 삭제되었습니다.',
+      }
+    }
+    return response.data
+  },
+}

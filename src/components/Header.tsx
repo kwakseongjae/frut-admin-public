@@ -20,6 +20,7 @@ const Header = () => {
       '/product-management': '상품관리',
       '/category-management': '카테고리 관리',
       '/badge-management': '뱃지 관리',
+      '/recommended-search-term-management': '추천 검색어 관리',
       '/special-offers': '특가 상품',
       '/purchase-management': '구매 관리',
       '/settlement': '매출 관리',

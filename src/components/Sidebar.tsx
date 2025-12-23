@@ -59,6 +59,7 @@ const Sidebar = () => {
         { label: '상품 관리', path: '/product-management' },
         { label: '카테고리 관리', path: '/category-management' },
         { label: '뱃지 관리', path: '/badge-management' },
+        { label: '추천 검색어 관리', path: '/recommended-search-term-management' },
       ],
     },
     {
